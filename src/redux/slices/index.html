@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<style>
+    html, * {
+        margin: 0;
+        padding: 0;
+    }
+</style>
+<body>
+    <div style="height: 100vh; width: 100vw; background-color: #cdcdcd; display: flex; justify-content: center; align-items: center;">
+        <div style="height: 80%; width: 80%; background-color: #fff; border-radius: 10px; padding-left: 20px;">
+            <br>
+            <br>
+            <h1 style="text-align: center;">Kalkulator sederhana</h1>
+            <br>
+            <br>
+            <p>Masukan angka pertama</p>
+            <br>
+            <input type="number" id="num1">
+            <br>
+            <br>
+            <p>masukan angka kedua</p>
+            <br>
+            <input type="number" id="num2">
+            <br>
+            <br>
+            <button onclick="tambah()" style="padding: 10px;">+</button>
+            <button onclick="kurang()" style="padding: 10px;">-</button>
+            <button onclick="kali()" style="padding: 10px;">x</button>
+            <button onclick="bagi()" style="padding: 10px;">/</button>
+            <br>
+            <br>
+            <p>hasil nya : </p>
+            <br>
+            <p id="result"></p>
+        </div>
+    </div>
+</body>
+<script>
+
+    function tambah() {
+        const data1 = document.getElementById('num1').value;
+        const data2 = document.getElementById('num2').value;
+        const showresult = document.getElementById('result');
+
+        const parsedata1 = parseFloat(data1);
+        const parsedata2 = parseFloat(data2);
+
+        try {
+            if (parsedata1 && parsedata2) {
+                const result = parsedata1 + parsedata2;
+
+                showresult.textContent = result;
+            }else {
+                showresult.textContent = "mohon masukkan angka ke dalam 2 field input";
+            }
+        } catch (error) {
+            showresult.textContent = "sorry, the system error : ", error;
+        }
+    }
+
+    function kurang() {
+        const data1 = document.getElementById('num1').value;
+        const data2 = document.getElementById('num2').value;
+        const showresult = document.getElementById('result');
+
+        const parsedata1 = parseFloat(data1);
+        const parsedata2 = parseFloat(data2);
+
+        try {
+            if (parsedata1 && parsedata2) {
+                const result = parsedata1 - parsedata2;
+
+                showresult.textContent = result;
+            }else {
+                showresult.textContent = "mohon masukkan angka ke dalam 2 field input";
+            }
+        } catch (error) {
+            showresult.textContent = "sorry, the system error : ", error;
+        }
+    }
+
+    function kali() {
+        const data1 = document.getElementById('num1').value;
+        const data2 = document.getElementById('num2').value;
+        const showresult = document.getElementById('result');
+
+        const parsedata1 = parseFloat(data1);
+        const parsedata2 = parseFloat(data2);
+
+        try {
+            if (parsedata1 && parsedata2) {
+                const result = parsedata1 * parsedata2;
+
+                showresult.textContent = result;
+            }else {
+                showresult.textContent = "mohon masukkan angka ke dalam 2 field input";
+            }
+        } catch (error) {
+            showresult.textContent = "sorry, the system error : ", error;
+        }
+    }
+
+    function bagi() {
+        const data1 = document.getElementById('num1').value;
+        const data2 = document.getElementById('num2').value;
+        const showresult = document.getElementById('result');
+
+        const parsedata1 = parseFloat(data1);
+        const parsedata2 = parseFloat(data2);
+
+        try {
+            if (parsedata1 && parsedata2) {
+                const result = parsedata1 / parsedata2;
+
+                showresult.textContent = result;
+            }else {
+                showresult.textContent = "mohon masukkan angka ke dalam 2 field input";
+            }
+        } catch (error) {
+            showresult.textContent = "sorry, the system error : ", error;
+        }
+    }
+</script>
+</html>
