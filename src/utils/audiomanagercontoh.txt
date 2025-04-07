@@ -1,0 +1,131 @@
+// utils/AudioManager.js
+import Sound from 'react-native-sound';
+import MusicControl from 'react-native-music-control';
+import BackgroundActions from 'react-native-background-actions';
+
+// Background task setup
+const sleep = (time) => new Promise(resolve => setTimeout(resolve, time));
+
+class AudioManager {
+    player = null;
+    track = null;
+    isPlaying = false;
+
+    async loadTrack(track, onLoad, onEnd) {
+        this.release();
+
+        this.track = track; // Simpan track saat ini
+        this.player = new Sound(track.audioUrl, null, (error) => {
+            if (error) {
+                console.error('❌ Error loading sound:', error);
+                return;
+            }
+            onLoad && onLoad(this.player);
+
+            this.play(onEnd); // Langsung play pas udah load
+            this.setupMusicControl();
+        });
+    }
+
+    play(onEnd) {
+        this.player?.play((success) => {
+            if (success) {
+                onEnd?.();
+            }
+        });
+        this.isPlaying = true;
+        MusicControl.updatePlayback({ state: MusicControl.STATE_PLAYING });
+        this.startBackgroundTask();
+    }
+
+    pause() {
+        this.player?.pause();
+        this.isPlaying = false;
+        MusicControl.updatePlayback({ state: MusicControl.STATE_PAUSED });
+        this.stopBackgroundTask();
+    }
+
+    stop() {
+        this.player?.stop();
+        this.isPlaying = false;
+        MusicControl.updatePlayback({ state: MusicControl.STATE_STOPPED });
+        this.stopBackgroundTask();
+    }
+
+    release() {
+        this.player?.release();
+        this.player = null;
+        this.isPlaying = false;
+        this.stopBackgroundTask();
+        MusicControl.stopControl();
+    }
+
+    getCurrentTime(callback) {
+        this.player?.getCurrentTime(callback);
+    }
+
+    setCurrentTime(time) {
+        this.player?.setCurrentTime(time);
+    }
+
+    setupMusicControl() {
+        MusicControl.setNowPlaying({
+            title: this.track.title,
+            artist: this.track.artist,
+            artwork: this.track.imageUrl,
+            duration: this.player.getDuration(),
+        });
+
+        MusicControl.enableControl('play', true);
+        MusicControl.enableControl('pause', true);
+        MusicControl.enableControl('stop', true);
+        MusicControl.enableControl('nextTrack', true);
+        MusicControl.enableControl('previousTrack', true);
+
+        MusicControl.on('play', () => this.play());
+        MusicControl.on('pause', () => this.pause());
+        MusicControl.on('nextTrack', () => this.nextTrack());
+        MusicControl.on('previousTrack', () => this.prevTrack());
+    }
+
+    async startBackgroundTask() {
+        if (BackgroundActions.isRunning()) return;
+
+        const task = async () => {
+            while (this.isPlaying) {
+                await sleep(1000);
+                this.getCurrentTime((time) => {
+                    console.log(`🎧 Background Progress: ${time}`);
+                    MusicControl.updatePlayback({ elapsedTime: time });
+                });
+            }
+        };
+
+        await BackgroundActions.start(task, {
+            taskName: 'MusicPlayer',
+            taskTitle: this.track.title,
+            taskDesc: 'Playing your awesome music',
+            taskIcon: { name: 'ic_launcher', type: 'drawable' },
+            color: '#FF0000',
+        });
+    }
+
+    async stopBackgroundTask() {
+        if (BackgroundActions.isRunning()) {
+            await BackgroundActions.stop();
+        }
+    }
+
+    nextTrack() {
+        // Logic pindah lagu (kalau pakai queue dari Redux)
+        console.log('⏭️ Next track');
+    }
+
+    prevTrack() {
+        // Logic balik lagu (kalau pakai queue dari Redux)
+        console.log('⏮️ Previous track');
+    }
+}
+
+const audioManager = new AudioManager();
+export default audioManager;

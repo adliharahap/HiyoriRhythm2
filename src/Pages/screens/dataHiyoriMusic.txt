@@ -1,0 +1,168 @@
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, Dimensions } from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  withDelay,
+  Easing,
+  runOnJS,
+} from 'react-native-reanimated';
+
+const { width: screenWidth } = Dimensions.get('window');
+
+const TextTicker = ({
+  children,
+  duration = 4000,
+  repeatSpacer = 100,
+  marqueeDelay = 2000,
+  pauseDuration = 10,
+  style = {},
+}) => {
+  const translateX1 = useSharedValue(0);
+  const translateX2 = useSharedValue(screenWidth); // Start dari kanan
+  const textWidth = useSharedValue(0);
+
+  const [measuredWidth, setMeasuredWidth] = useState(0);
+  const [isMeasured, setIsMeasured] = useState(false);
+  const [animationReady, setAnimationReady] = useState(false);
+
+  const handleTextLayout = (e) => {
+    const measured = e.nativeEvent.layout.width;
+    if (measured > 0) {
+      setMeasuredWidth(measured);
+      setIsMeasured(true);
+    }
+  };
+
+  useEffect(() => {
+    if (isMeasured) {
+      textWidth.value = measuredWidth;
+      setTimeout(() => setAnimationReady(true), 500);
+    }
+  }, [isMeasured, measuredWidth]);
+
+  const startAnimation = () => {
+    const totalDistance = textWidth.value + repeatSpacer;
+
+    const animateLoop = () => {
+      translateX1.value = withDelay(
+        marqueeDelay,
+        withTiming(-totalDistance, {
+          duration,
+          easing: Easing.linear,
+        }, (finished) => {
+          if (finished) {
+            translateX1.value = screenWidth;
+            translateX1.value = withDelay(
+              pauseDuration,
+              withTiming(0, {
+                duration,
+                easing: Easing.linear,
+              }, () => {
+                runOnJS(animateLoop)();
+              })
+            );
+          }
+        })
+      );
+
+      // Animasi teks kedua dengan delay
+      translateX2.value = withDelay(
+        marqueeDelay, // Mulai setelah 2 detik
+        withTiming(-totalDistance, {
+          duration,
+          easing: Easing.linear,
+        }, (finished) => {
+          if (finished) {
+            translateX2.value = screenWidth;
+            translateX2.value = withDelay(
+              pauseDuration,
+              withTiming(0, {
+                duration,
+                easing: Easing.linear,
+              }, () => {
+                runOnJS(animateLoop)();
+              })
+            );
+          }
+        })
+      );
+    };
+
+    animateLoop();
+  };
+
+  useEffect(() => {
+    if (animationReady) {
+      startAnimation();
+    }
+  }, [animationReady]);
+
+  const animatedStyle1 = useAnimatedStyle(() => ({
+    transform: [{ translateX: translateX1.value }],
+  }));
+
+  const animatedStyle2 = useAnimatedStyle(() => ({
+    transform: [{ translateX: translateX2.value }],
+  }));
+
+  return (
+    <View style={styles.container}>
+      <Text onLayout={handleTextLayout} numberOfLines={1} style={[styles.hiddenText, style]}>
+        {children}
+      </Text>
+
+      {!animationReady ? (
+        <Text numberOfLines={1} style={[styles.text, style]}>
+          {children}
+        </Text>
+      ) : (
+        <View style={styles.row}>
+          {/* Teks pertama */}
+          <Animated.View style={[styles.row, animatedStyle1]}>
+            <Text numberOfLines={1} ellipsizeMode="tail" style={[styles.text, style]}>
+              {children}
+            </Text>
+            <View style={{ width: repeatSpacer, backgroundColor: 'red', height: 20 }} />
+          </Animated.View>
+          {/* Teks kedua (muncul setelah delay 2 detik) */}
+          <Animated.View style={[styles.row, animatedStyle1, {backgroundColor: 'green', height: '100%'}]}>
+            <Text numberOfLines={1} ellipsizeMode="tail" style={[styles.text, style]}>
+              {children}
+            </Text>
+          </Animated.View>
+        </View>
+      )}
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    width: screenWidth,
+    overflow: 'hidden',
+    justifyContent: 'center',
+    alignItems: 'flex-start',
+  },
+  column: {
+    flexDirection: 'column', // Susun vertikal
+  },
+  row: {
+    flexDirection: 'row', // Susun horizontal
+    alignItems: 'center',
+    backgroundColor: 'blue',
+  },
+  text: {
+    fontSize: 20,
+    color: '#fff',
+    fontWeight: 'bold',
+    includeFontPadding: false,
+  },
+  hiddenText: {
+    position: 'absolute',
+    opacity: 0,
+  },
+});
+
+export default TextTicker;

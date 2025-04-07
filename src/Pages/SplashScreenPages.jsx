@@ -5,6 +5,7 @@ import { check, PERMISSIONS, RESULTS } from 'react-native-permissions';
 import { useNavigation } from '@react-navigation/native';
 import { useSelector, useDispatch } from 'react-redux';
 import { setAudioFiles } from '../redux/slices/audioSlice';
+import { fetchAudioFiles } from 'react-native-audio-files';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -18,6 +19,7 @@ import LinearGradient from 'react-native-linear-gradient';
 
 const SplashScreenPages = () => {
   const navigation = useNavigation();
+  const dispatch = useDispatch();
 
   useEffect(() => {
       checkPermissionsAndNavigate();
@@ -55,10 +57,31 @@ const SplashScreenPages = () => {
           }
 
           if (granted) {
-              setTimeout(() => {
-                // navigation.replace('Home');
-              }, 4000);
-              console.log("kont");
+            try {
+              let mappingFinished = false;
+
+              const getAudioFiles = async () => {
+                  try {
+                      const result = await fetchAudioFiles();
+                      dispatch(setAudioFiles(result));
+                      
+                  } catch (error) {
+                      console.log('Error fetching audio files:', error);
+                      // Tangani kesalahan jika perlu
+                  }
+              };
+              await getAudioFiles();
+
+              mappingFinished = true;
+
+              if (mappingFinished) {
+                  setTimeout(() => {
+                      navigation.replace('MainScreen');
+                  }, 4000);
+              }
+            }catch(e) {
+              console.log("Sorry, The App Crashed : ", error);
+            }
           } else {
               setTimeout(() => {
                 navigation.replace('AksesDenied');

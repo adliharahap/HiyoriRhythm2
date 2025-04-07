@@ -6,6 +6,8 @@ import store from './src/redux/store';
 import SplashScreenPages from './src/Pages/SplashScreenPages';
 import OnboardingScreen from './src/Pages/onboarding/OnboardingScreen';
 import FIleAksesDenied from './src/Pages/FileAksesDenied/FIleAksesDenied';
+import MainScreen from './src/Pages/MainScreen';
+import PlayMusicLyrics from './src/Pages/screens/PlayMusicLyrics';
 
 const Stack = createNativeStackNavigator();
 
@@ -18,6 +20,8 @@ const App = () => {
           <Stack.Screen name='SplashScreen' component={SplashScreenPages} />
           <Stack.Screen name='Onboarding' component={OnboardingScreen} />
           <Stack.Screen name='AksesDenied' component={FIleAksesDenied} />
+          <Stack.Screen name='MainScreen' component={MainScreen} />
+          <Stack.Screen name='MusicPlay' component={PlayMusicLyrics} />
         </Stack.Navigator>
       </NavigationContainer>
     </Provider>
